@@ -1,0 +1,955 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { motion, useScroll, useTransform, useSpring, useMotionValueEvent } from 'framer-motion';
+
+// --- Verified Artworks Data (100 Items) ---
+const artworkData = [
+  {
+    "id": 1,
+    "title": "Mona Lisa",
+    "artist": "Leonardo da Vinci",
+    "year": "1503",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/960px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg"
+  },
+  {
+    "id": 2,
+    "title": "The Last Supper",
+    "artist": "Leonardo da Vinci",
+    "year": "1498",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Leonardo_da_Vinci_%281452-1519%29_-_The_Last_Supper_%281495-1498%29.jpg/960px-Leonardo_da_Vinci_%281452-1519%29_-_The_Last_Supper_%281495-1498%29.jpg"
+  },
+  {
+    "id": 3,
+    "title": "The Birth of Venus",
+    "artist": "Sandro Botticelli",
+    "year": "1486",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg/960px-Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg"
+  },
+  {
+    "id": 4,
+    "title": "Primavera",
+    "artist": "Sandro Botticelli",
+    "year": "1482",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Botticelli-primavera.jpg/960px-Botticelli-primavera.jpg"
+  },
+  {
+    "id": 5,
+    "title": "The Creation of Adam",
+    "artist": "Michelangelo",
+    "year": "1512",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg/960px-Michelangelo_-_Creation_of_Adam_%28cropped%29.jpg"
+  },
+  {
+    "id": 6,
+    "title": "School of Athens",
+    "artist": "Raphael",
+    "year": "1511",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/%22The_School_of_Athens%22_by_Raffaello_Sanzio_da_Urbino.jpg/960px-%22The_School_of_Athens%22_by_Raffaello_Sanzio_da_Urbino.jpg"
+  },
+  {
+    "id": 7,
+    "title": "Venus of Urbino",
+    "artist": "Titian",
+    "year": "1538",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Tiziano_-_Venere_di_Urbino_-_Google_Art_Project.jpg/960px-Tiziano_-_Venere_di_Urbino_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 8,
+    "title": "Assumption of the Virgin",
+    "artist": "Titian",
+    "year": "1518",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Duomo_%28Verona%29_-_Cartolari-Nichesola_Chapel_-_L%27assunzione_del_Tiziano.jpg/960px-Duomo_%28Verona%29_-_Cartolari-Nichesola_Chapel_-_L%27assunzione_del_Tiziano.jpg"
+  },
+  {
+    "id": 9,
+    "title": "Medusa",
+    "artist": "Caravaggio",
+    "year": "1597",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Caravaggio_-_Medusa_-_Google_Art_Project.jpg/960px-Caravaggio_-_Medusa_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 10,
+    "title": "The Calling of St Matthew",
+    "artist": "Caravaggio",
+    "year": "1600",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Calling-of-st-matthew.jpg/960px-Calling-of-st-matthew.jpg"
+  },
+  {
+    "id": 11,
+    "title": "Girl with a Pearl Earring",
+    "artist": "Johannes Vermeer",
+    "year": "1665",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Meisje_met_de_parel.jpg/960px-Meisje_met_de_parel.jpg"
+  },
+  {
+    "id": 12,
+    "title": "The Milkmaid",
+    "artist": "Johannes Vermeer",
+    "year": "1658",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Johannes_Vermeer_-_Het_melkmeisje_-_Google_Art_Project.jpg/960px-Johannes_Vermeer_-_Het_melkmeisje_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 13,
+    "title": "The Night Watch",
+    "artist": "Rembrandt",
+    "year": "1642",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/The_Night_Watch_-_HD.jpg/960px-The_Night_Watch_-_HD.jpg"
+  },
+  {
+    "id": 14,
+    "title": "The Anatomy Lesson of Dr. Nicolaes Tulp",
+    "artist": "Rembrandt",
+    "year": "1632",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Rembrandt_-_The_Anatomy_Lesson_of_Dr_Nicolaes_Tulp.jpg/960px-Rembrandt_-_The_Anatomy_Lesson_of_Dr_Nicolaes_Tulp.jpg"
+  },
+  {
+    "id": 15,
+    "title": "Self-Portrait with Two Circles",
+    "artist": "Rembrandt",
+    "year": "1660",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Rembrandt_van_Rijn_-_Self-Portrait_-_Google_Art_Project.jpg/960px-Rembrandt_van_Rijn_-_Self-Portrait_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 16,
+    "title": "Las Meninas",
+    "artist": "Diego Velázquez",
+    "year": "1656",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Las_Meninas%2C_by_Diego_Vel%C3%A1zquez%2C_from_Prado_in_Google_Earth.jpg/960px-Las_Meninas%2C_by_Diego_Vel%C3%A1zquez%2C_from_Prado_in_Google_Earth.jpg"
+  },
+  {
+    "id": 17,
+    "title": "The Surrender of Breda",
+    "artist": "Diego Velázquez",
+    "year": "1635",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Velazquez-The_Surrender_of_Breda.jpg/960px-Velazquez-The_Surrender_of_Breda.jpg"
+  },
+  {
+    "id": 18,
+    "title": "The Third of May 1808",
+    "artist": "Francisco Goya",
+    "year": "1814",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/El_Tres_de_Mayo%2C_by_Francisco_de_Goya%2C_from_Prado_in_Google_Earth.jpg/960px-El_Tres_de_Mayo%2C_by_Francisco_de_Goya%2C_from_Prado_in_Google_Earth.jpg"
+  },
+  {
+    "id": 19,
+    "title": "Saturn Devouring His Son",
+    "artist": "Francisco Goya",
+    "year": "1823",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Francisco_de_Goya%2C_Saturno_devorando_a_su_hijo_%281819-1823%29.jpg/960px-Francisco_de_Goya%2C_Saturno_devorando_a_su_hijo_%281819-1823%29.jpg"
+  },
+  {
+    "id": 20,
+    "title": "The Naked Maja",
+    "artist": "Francisco Goya",
+    "year": "1800",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Goya_Maja_naga2.jpg/960px-Goya_Maja_naga2.jpg"
+  },
+  {
+    "id": 21,
+    "title": "Liberty Leading the People",
+    "artist": "Eugène Delacroix",
+    "year": "1830",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Eug%C3%A8ne_Delacroix_-_Le_28_Juillet._La_Libert%C3%A9_guidant_le_peuple.jpg/960px-Eug%C3%A8ne_Delacroix_-_Le_28_Juillet._La_Libert%C3%A9_guidant_le_peuple.jpg"
+  },
+  {
+    "id": 22,
+    "title": "The Raft of the Medusa",
+    "artist": "Théodore Géricault",
+    "year": "1819",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/JEAN_LOUIS_TH%C3%89ODORE_G%C3%89RICAULT_-_La_Balsa_de_la_Medusa_%28Museo_del_Louvre%2C_1818-19%29.jpg/960px-JEAN_LOUIS_TH%C3%89ODORE_G%C3%89RICAULT_-_La_Balsa_de_la_Medusa_%28Museo_del_Louvre%2C_1818-19%29.jpg"
+  },
+  {
+    "id": 23,
+    "title": "Napoleon Crossing the Alps",
+    "artist": "Jacques-Louis David",
+    "year": "1801",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/David_-_Napoleon_crossing_the_Alps_-_Malmaison1.jpg/960px-David_-_Napoleon_crossing_the_Alps_-_Malmaison1.jpg"
+  },
+  {
+    "id": 24,
+    "title": "The Death of Marat",
+    "artist": "Jacques-Louis David",
+    "year": "1793",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Death_of_Marat_by_David.jpg/960px-Death_of_Marat_by_David.jpg"
+  },
+  {
+    "id": 25,
+    "title": "The Grande Odalisque",
+    "artist": "Jean-Auguste-Dominique Ingres",
+    "year": "1814",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Jean_Auguste_Dominique_Ingres%2C_La_Grande_Odalisque%2C_1814.jpg/960px-Jean_Auguste_Dominique_Ingres%2C_La_Grande_Odalisque%2C_1814.jpg"
+  },
+  {
+    "id": 26,
+    "title": "Impression, Sunrise",
+    "artist": "Claude Monet",
+    "year": "1872",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Monet_-_Impression%2C_Sunrise.jpg/960px-Monet_-_Impression%2C_Sunrise.jpg"
+  },
+  {
+    "id": 27,
+    "title": "Water Lilies",
+    "artist": "Claude Monet",
+    "year": "1919",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Claude_Monet_-_Water_Lilies_-_Google_Art_Project_%28462013%29.jpg/960px-Claude_Monet_-_Water_Lilies_-_Google_Art_Project_%28462013%29.jpg"
+  },
+  {
+    "id": 28,
+    "title": "Luncheon of the Boating Party",
+    "artist": "Pierre-Auguste Renoir",
+    "year": "1881",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Pierre-Auguste_Renoir_-_Luncheon_of_the_Boating_Party_-_Google_Art_Project.jpg/960px-Pierre-Auguste_Renoir_-_Luncheon_of_the_Boating_Party_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 29,
+    "title": "Dance at Le Moulin de la Galette",
+    "artist": "Pierre-Auguste Renoir",
+    "year": "1876",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Pierre-Auguste_Renoir%2C_Le_Moulin_de_la_Galette.jpg/960px-Pierre-Auguste_Renoir%2C_Le_Moulin_de_la_Galette.jpg"
+  },
+  {
+    "id": 30,
+    "title": "The Absinthe Drinker",
+    "artist": "Edgar Degas",
+    "year": "1876",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Edgar_Degas_-_In_a_Caf%C3%A9_-_Google_Art_Project_2.jpg/960px-Edgar_Degas_-_In_a_Caf%C3%A9_-_Google_Art_Project_2.jpg"
+  },
+  {
+    "id": 31,
+    "title": "The Starry Night",
+    "artist": "Vincent van Gogh",
+    "year": "1889",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/960px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 32,
+    "title": "Sunflowers",
+    "artist": "Vincent van Gogh",
+    "year": "1888",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Vincent_Willem_van_Gogh_127.jpg/960px-Vincent_Willem_van_Gogh_127.jpg"
+  },
+  {
+    "id": 33,
+    "title": "Café Terrace at Night",
+    "artist": "Vincent van Gogh",
+    "year": "1888",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Vincent_Willem_van_Gogh_-_Cafe_Terrace_at_Night_%28Yorck%29.jpg/960px-Vincent_Willem_van_Gogh_-_Cafe_Terrace_at_Night_%28Yorck%29.jpg"
+  },
+  {
+    "id": 34,
+    "title": "A Sunday Afternoon on the Island of La Grande Jatte",
+    "artist": "Georges Seurat",
+    "year": "1884",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/A_Sunday_on_La_Grande_Jatte%2C_Georges_Seurat%2C_1884.jpg/960px-A_Sunday_on_La_Grande_Jatte%2C_Georges_Seurat%2C_1884.jpg"
+  },
+  {
+    "id": 35,
+    "title": "The Card Players",
+    "artist": "Paul Cézanne",
+    "year": "1895",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Les_Joueurs_de_cartes%2C_par_Paul_C%C3%A9zanne.jpg/960px-Les_Joueurs_de_cartes%2C_par_Paul_C%C3%A9zanne.jpg"
+  },
+  {
+    "id": 36,
+    "title": "Mont Sainte-Victoire",
+    "artist": "Paul Cézanne",
+    "year": "1904",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Paul_C%C3%A9zanne_-_Mont_Sainte-Victoire_-_Google_Art_Project.jpg/960px-Paul_C%C3%A9zanne_-_Mont_Sainte-Victoire_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 37,
+    "title": "Where Do We Come From? What Are We? Where Are We Going?",
+    "artist": "Paul Gauguin",
+    "year": "1897",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Paul_Gauguin_-_D%27ou_venons-nous.jpg/960px-Paul_Gauguin_-_D%27ou_venons-nous.jpg"
+  },
+  {
+    "id": 38,
+    "title": "The Scream",
+    "artist": "Edvard Munch",
+    "year": "1893",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Edvard_Munch_-_The_Scream_-_Google_Art_Project.jpg/960px-Edvard_Munch_-_The_Scream_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 39,
+    "title": "The Kiss",
+    "artist": "Gustav Klimt",
+    "year": "1908",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg/960px-The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg"
+  },
+  {
+    "id": 40,
+    "title": "Portrait of Adele Bloch-Bauer I",
+    "artist": "Gustav Klimt",
+    "year": "1907",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Gustav_Klimt_046.jpg/960px-Gustav_Klimt_046.jpg"
+  },
+  {
+    "id": 41,
+    "title": "American Gothic",
+    "artist": "Grant Wood",
+    "year": "1930",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Grant_Wood_-_American_Gothic_-_Google_Art_Project.jpg/960px-Grant_Wood_-_American_Gothic_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 42,
+    "title": "Nighthawks",
+    "artist": "Edward Hopper",
+    "year": "1942",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Nighthawks_by_Edward_Hopper_1942.jpg/960px-Nighthawks_by_Edward_Hopper_1942.jpg"
+  },
+  {
+    "id": 43,
+    "title": "Whistler's Mother",
+    "artist": "James McNeill Whistler",
+    "year": "1871",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Whistlers_Mother_high_res.jpg/960px-Whistlers_Mother_high_res.jpg"
+  },
+  {
+    "id": 44,
+    "title": "The Fighting Temeraire",
+    "artist": "J.M.W. Turner",
+    "year": "1839",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/The_Fighting_Temeraire%2C_JMW_Turner%2C_National_Gallery.jpg/960px-The_Fighting_Temeraire%2C_JMW_Turner%2C_National_Gallery.jpg"
+  },
+  {
+    "id": 45,
+    "title": "Ophelia",
+    "artist": "John Everett Millais",
+    "year": "1851",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg/960px-John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 46,
+    "title": "The Lady of Shalott",
+    "artist": "John William Waterhouse",
+    "year": "1888",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/John_William_Waterhouse_-_The_Lady_of_Shalott_-_Google_Art_Project.jpg/960px-John_William_Waterhouse_-_The_Lady_of_Shalott_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 47,
+    "title": "The Great Wave off Kanagawa",
+    "artist": "Hokusai",
+    "year": "1831",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Great_Wave_off_Kanagawa2.jpg/960px-Great_Wave_off_Kanagawa2.jpg"
+  },
+  {
+    "id": 48,
+    "title": "Red Fuji",
+    "artist": "Hokusai",
+    "year": "1830",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Katsushika_Hokusai_-_Fine_Wind%2C_Clear_Morning_%28Gaif%C5%AB_kaisei%29_-_Google_Art_Project.jpg/960px-Katsushika_Hokusai_-_Fine_Wind%2C_Clear_Morning_%28Gaif%C5%AB_kaisei%29_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 49,
+    "title": "Lady with an Ermine",
+    "artist": "Leonardo da Vinci",
+    "year": "1489",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Lady_with_an_Ermine_-_Leonardo_da_Vinci_-_Google_Art_Project.jpg/960px-Lady_with_an_Ermine_-_Leonardo_da_Vinci_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 50,
+    "title": "The Arnolfini Portrait",
+    "artist": "Jan van Eyck",
+    "year": "1434",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Van_Eyck_-_Arnolfini_Portrait.jpg/960px-Van_Eyck_-_Arnolfini_Portrait.jpg"
+  },
+  {
+    "id": 51,
+    "title": "The Ambassadors",
+    "artist": "Hans Holbein the Younger",
+    "year": "1533",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Hans_Holbein_the_Younger_-_The_Ambassadors_-_Google_Art_Project.jpg/960px-Hans_Holbein_the_Younger_-_The_Ambassadors_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 52,
+    "title": "Bacchus and Ariadne",
+    "artist": "Titian",
+    "year": "1523",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Titian_Bacchus_and_Ariadne.jpg/960px-Titian_Bacchus_and_Ariadne.jpg"
+  },
+  {
+    "id": 53,
+    "title": "The Wedding at Cana",
+    "artist": "Paolo Veronese",
+    "year": "1563",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Paolo_Veronese_008.jpg/960px-Paolo_Veronese_008.jpg"
+  },
+  {
+    "id": 54,
+    "title": "Judith Slaying Holofernes",
+    "artist": "Artemisia Gentileschi",
+    "year": "1620",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Artemisia_Gentileschi_-_Judith_Beheading_Holofernes_-_WGA8563.jpg/960px-Artemisia_Gentileschi_-_Judith_Beheading_Holofernes_-_WGA8563.jpg"
+  },
+  {
+    "id": 55,
+    "title": "The Laughing Cavalier",
+    "artist": "Frans Hals",
+    "year": "1624",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Cavalier_soldier_Hals-1624x.jpg/960px-Cavalier_soldier_Hals-1624x.jpg"
+  },
+  {
+    "id": 56,
+    "title": "The Lacemaker",
+    "artist": "Johannes Vermeer",
+    "year": "1670",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Spitzenkl%C3%B6pplerin_des_Johannes_Vermeer_im_Louvre.jpg/960px-Spitzenkl%C3%B6pplerin_des_Johannes_Vermeer_im_Louvre.jpg"
+  },
+  {
+    "id": 57,
+    "title": "Large Blue Horses",
+    "artist": "Franz Marc",
+    "year": "1911",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Large_Blue_Horses.jpg/960px-Large_Blue_Horses.jpg"
+  },
+  {
+    "id": 58,
+    "title": "Fate of the Animals",
+    "artist": "Franz Marc",
+    "year": "1913",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Franz_Marc-The_fate_of_the_animals-1913.jpg/960px-Franz_Marc-The_fate_of_the_animals-1913.jpg"
+  },
+  {
+    "id": 59,
+    "title": "Foxes",
+    "artist": "Franz Marc",
+    "year": "1913",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Franz_Marc_031.jpg/960px-Franz_Marc_031.jpg"
+  },
+  {
+    "id": 60,
+    "title": "Twittering Machine",
+    "artist": "Paul Klee",
+    "year": "1922",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Paul-klee-twittering-machine-1.jpg/960px-Paul-klee-twittering-machine-1.jpg"
+  },
+  {
+    "id": 61,
+    "title": "Castle and Sun",
+    "artist": "Paul Klee",
+    "year": "1928",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Paul_klee_castle_and_sun.jpg/960px-Paul_klee_castle_and_sun.jpg"
+  },
+  {
+    "id": 62,
+    "title": "Ad Parnassum",
+    "artist": "Paul Klee",
+    "year": "1932",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Paul_Klee_-_Ad_Parnassum.jpg/960px-Paul_Klee_-_Ad_Parnassum.jpg"
+  },
+  {
+    "id": 63,
+    "title": "In a Park",
+    "artist": "Berthe Morisot",
+    "year": "1874",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/0/0d/Morisot_-_in-a-park.jpg"
+  },
+  {
+    "id": 64,
+    "title": "The Cradle",
+    "artist": "Berthe Morisot",
+    "year": "1872",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Berthe_Morisot_-_The_Cradle_-_Google_Art_Project.jpg/960px-Berthe_Morisot_-_The_Cradle_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 65,
+    "title": "Paris Street; Rainy Day",
+    "artist": "Gustave Caillebotte",
+    "year": "1877",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Gustave_Caillebotte_-_Paris_Street%3B_Rainy_Day_-_Google_Art_Project.jpg/960px-Gustave_Caillebotte_-_Paris_Street%3B_Rainy_Day_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 66,
+    "title": "The Floor Scrapers",
+    "artist": "Gustave Caillebotte",
+    "year": "1875",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Gustave_Caillebotte_-_The_Floor_Planers_-_Google_Art_Project.jpg/960px-Gustave_Caillebotte_-_The_Floor_Planers_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 67,
+    "title": "Wanderer above the Sea of Fog",
+    "artist": "Caspar David Friedrich",
+    "year": "1818",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg/960px-Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg"
+  },
+  {
+    "id": 68,
+    "title": "The Garden of Earthly Delights",
+    "artist": "Hieronymus Bosch",
+    "year": "1510",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/El_jard%C3%ADn_de_las_Delicias%2C_de_El_Bosco.jpg/960px-El_jard%C3%ADn_de_las_Delicias%2C_de_El_Bosco.jpg"
+  },
+  {
+    "id": 69,
+    "title": "The Tower of Babel",
+    "artist": "Pieter Bruegel the Elder",
+    "year": "1563",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29_-_Google_Art_Project_-_edited.jpg/960px-Pieter_Bruegel_the_Elder_-_The_Tower_of_Babel_%28Vienna%29_-_Google_Art_Project_-_edited.jpg"
+  },
+  {
+    "id": 70,
+    "title": "Hunters in the Snow",
+    "artist": "Pieter Bruegel the Elder",
+    "year": "1565",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Pieter_Bruegel_the_Elder_-_Hunters_in_the_Snow_%28Winter%29_-_Google_Art_Project.jpg/960px-Pieter_Bruegel_the_Elder_-_Hunters_in_the_Snow_%28Winter%29_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 71,
+    "title": "The Swing",
+    "artist": "Jean-Honoré Fragonard",
+    "year": "1767",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Joean_Honor%C3%A9_Fragonard_-_The_Swing.jpg/960px-Joean_Honor%C3%A9_Fragonard_-_The_Swing.jpg"
+  },
+  {
+    "id": 72,
+    "title": "Blue Boy",
+    "artist": "Thomas Gainsborough",
+    "year": "1770",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/The_Blue_Boy.jpg/872px-The_Blue_Boy.jpg"
+  },
+  {
+    "id": 73,
+    "title": "Mr and Mrs Andrews",
+    "artist": "Thomas Gainsborough",
+    "year": "1750",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Thomas_Gainsborough_-_Mr_and_Mrs_Andrews.jpg/960px-Thomas_Gainsborough_-_Mr_and_Mrs_Andrews.jpg"
+  },
+  {
+    "id": 74,
+    "title": "The Hay Wain",
+    "artist": "John Constable",
+    "year": "1821",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/John_Constable_-_The_Hay_Wain_%281821%29.jpg/960px-John_Constable_-_The_Hay_Wain_%281821%29.jpg"
+  },
+  {
+    "id": 75,
+    "title": "Rain, Steam and Speed",
+    "artist": "J.M.W. Turner",
+    "year": "1844",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Rain_Steam_and_Speed_the_Great_Western_Railway.jpg/960px-Rain_Steam_and_Speed_the_Great_Western_Railway.jpg"
+  },
+  {
+    "id": 76,
+    "title": "Breezing Up",
+    "artist": "Winslow Homer",
+    "year": "1876",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Winslow_Homer_-_Breezing_Up_%28A_Fair_Wind%29_-_Google_Art_Project.jpg/960px-Winslow_Homer_-_Breezing_Up_%28A_Fair_Wind%29_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 77,
+    "title": "The Gulf Stream",
+    "artist": "Winslow Homer",
+    "year": "1899",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Winslow_Homer_-_The_Gulf_Stream_-_Metropolitan_Museum_of_Art.jpg/960px-Winslow_Homer_-_The_Gulf_Stream_-_Metropolitan_Museum_of_Art.jpg"
+  },
+  {
+    "id": 78,
+    "title": "Madame X",
+    "artist": "John Singer Sargent",
+    "year": "1884",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Madame_X_%28Madame_Pierre_Gautreau%29%2C_John_Singer_Sargent%2C_1884_%28unfree_frame_crop%29.jpg/960px-Madame_X_%28Madame_Pierre_Gautreau%29%2C_John_Singer_Sargent%2C_1884_%28unfree_frame_crop%29.jpg"
+  },
+  {
+    "id": 79,
+    "title": "Carnation, Lily, Lily, Rose",
+    "artist": "John Singer Sargent",
+    "year": "1885",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/John_Singer_Sargent_-_Carnation%2C_Lily%2C_Lily%2C_Rose_-_Google_Art_Project.jpg/960px-John_Singer_Sargent_-_Carnation%2C_Lily%2C_Lily%2C_Rose_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 80,
+    "title": "Olympia",
+    "artist": "Édouard Manet",
+    "year": "1863",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Edouard_Manet_-_Olympia_-_Google_Art_Project_3.jpg/960px-Edouard_Manet_-_Olympia_-_Google_Art_Project_3.jpg"
+  },
+  {
+    "id": 81,
+    "title": "The Luncheon on the Grass",
+    "artist": "Édouard Manet",
+    "year": "1863",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Edouard_Manet_-_Luncheon_on_the_Grass_-_Google_Art_Project.jpg/960px-Edouard_Manet_-_Luncheon_on_the_Grass_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 82,
+    "title": "A Bar at the Folies-Bergère",
+    "artist": "Édouard Manet",
+    "year": "1882",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Edouard_Manet%2C_A_Bar_at_the_Folies-Berg%C3%A8re.jpg/960px-Edouard_Manet%2C_A_Bar_at_the_Folies-Berg%C3%A8re.jpg"
+  },
+  {
+    "id": 83,
+    "title": "The Gross Clinic",
+    "artist": "Thomas Eakins",
+    "year": "1875",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Thomas_Eakins%2C_American_-_Portrait_of_Dr._Samuel_D._Gross_%28The_Gross_Clinic%29_-_Google_Art_Project.jpg/960px-Thomas_Eakins%2C_American_-_Portrait_of_Dr._Samuel_D._Gross_%28The_Gross_Clinic%29_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 84,
+    "title": "The Swimming Hole",
+    "artist": "Thomas Eakins",
+    "year": "1885",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Girl_with_swimming_board.jpg/960px-Girl_with_swimming_board.jpg"
+  },
+  {
+    "id": 85,
+    "title": "Arrangement in Grey and Black No.1",
+    "artist": "James McNeill Whistler",
+    "year": "1871",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Whistlers_Mother_high_res.jpg/960px-Whistlers_Mother_high_res.jpg"
+  },
+  {
+    "id": 86,
+    "title": "Nocturne in Black and Gold – The Falling Rocket",
+    "artist": "James McNeill Whistler",
+    "year": "1875",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Whistler-Nocturne_in_black_and_gold.jpg/960px-Whistler-Nocturne_in_black_and_gold.jpg"
+  },
+  {
+    "id": 87,
+    "title": "The Gleaners",
+    "artist": "Jean-François Millet",
+    "year": "1857",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Jean-Fran%C3%A7ois_Millet_-_Gleaners_-_Google_Art_Project_2.jpg/960px-Jean-Fran%C3%A7ois_Millet_-_Gleaners_-_Google_Art_Project_2.jpg"
+  },
+  {
+    "id": 88,
+    "title": "The Angelus",
+    "artist": "Jean-François Millet",
+    "year": "1859",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Jean-Fran%C3%A7ois_Millet_Angelus.jpg/960px-Jean-Fran%C3%A7ois_Millet_Angelus.jpg"
+  },
+  {
+    "id": 89,
+    "title": "The Desperate Man",
+    "artist": "Gustave Courbet",
+    "year": "1845",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Gustave_Courbet_-_Le_D%C3%A9sesp%C3%A9r%C3%A9_%281843%29.jpg/960px-Gustave_Courbet_-_Le_D%C3%A9sesp%C3%A9r%C3%A9_%281843%29.jpg"
+  },
+  {
+    "id": 90,
+    "title": "The Stone Breakers",
+    "artist": "Gustave Courbet",
+    "year": "1849",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Gustave_Courbet_-_The_Stonebreakers_-_WGA05457.jpg/960px-Gustave_Courbet_-_The_Stonebreakers_-_WGA05457.jpg"
+  },
+  {
+    "id": 91,
+    "title": "Bargemen Singing",
+    "artist": "Ilya Repin",
+    "year": "1873",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Ilya_Repin_-_Barge_Haulers_on_the_Volga_-_Google_Art_Project.jpg/960px-Ilya_Repin_-_Barge_Haulers_on_the_Volga_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 92,
+    "title": "Reply of the Zaporozhian Cossacks",
+    "artist": "Ilya Repin",
+    "year": "1891",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Repin_Cossacks.jpg/960px-Repin_Cossacks.jpg"
+  },
+  {
+    "id": 93,
+    "title": "Morning in a Pine Forest",
+    "artist": "Ivan Shishkin",
+    "year": "1889",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Shishkin%2C_Ivan_-_Morning_in_a_Pine_Forest.jpg/960px-Shishkin%2C_Ivan_-_Morning_in_a_Pine_Forest.jpg"
+  },
+  {
+    "id": 94,
+    "title": "The Ninth Wave",
+    "artist": "Ivan Aivazovsky",
+    "year": "1850",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Hovhannes_Aivazovsky_-_The_Ninth_Wave_-_Google_Art_Project.jpg/960px-Hovhannes_Aivazovsky_-_The_Ninth_Wave_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 95,
+    "title": "The Apotheosis of War",
+    "artist": "Vasily Vereshchagin",
+    "year": "1871",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/1871_Vereshchagin_Apotheose_des_Krieges_anagoria.JPG/960px-1871_Vereshchagin_Apotheose_des_Krieges_anagoria.JPG"
+  },
+  {
+    "id": 96,
+    "title": "Lady with an Ermine",
+    "artist": "Leonardo da Vinci",
+    "year": "1489",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Lady_with_an_Ermine_-_Leonardo_da_Vinci_-_Google_Art_Project.jpg/960px-Lady_with_an_Ermine_-_Leonardo_da_Vinci_-_Google_Art_Project.jpg"
+  },
+  {
+    "id": 97,
+    "title": "Napoleon I on His Imperial Throne",
+    "artist": "Jean-Auguste-Dominique Ingres",
+    "year": "1806",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Ingres%2C_Napoleon_on_his_Imperial_throne.jpg/960px-Ingres%2C_Napoleon_on_his_Imperial_throne.jpg"
+  },
+  {
+    "id": 98,
+    "title": "The Valpinçon Bather",
+    "artist": "Jean-Auguste-Dominique Ingres",
+    "year": "1808",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Jean-Auguste-Dominique_Ingres_-_La_Baigneuse_Valpin%C3%A7on.jpg/960px-Jean-Auguste-Dominique_Ingres_-_La_Baigneuse_Valpin%C3%A7on.jpg"
+  },
+  {
+    "id": 99,
+    "title": "The Turkish Bath",
+    "artist": "Jean-Auguste-Dominique Ingres",
+    "year": "1862",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Jean_Auguste_Dominique_Ingres_-_The_Turkish_Bath_-_WGA11855.jpg/960px-Jean_Auguste_Dominique_Ingres_-_The_Turkish_Bath_-_WGA11855.jpg"
+  },
+  {
+    "id": 100,
+    "title": "Oath of the Horatii",
+    "artist": "Jacques-Louis David",
+    "year": "1784",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Jacques-Louis_David_-_Oath_of_the_Horatii_-_Google_Art_Project.jpg/960px-Jacques-Louis_David_-_Oath_of_the_Horatii_-_Google_Art_Project.jpg"
+  }
+].map(item => ({ ...item, delay: Math.random() * 0.5 })); // No topOffset needed in Flex layout!
+
+// Eras Helper
+const getEra = (year) => {
+  const y = parseInt(year);
+  if (isNaN(y)) return "Unknown";
+  const century = Math.floor((y - 1) / 100) + 1;
+  return `${century}th Century`;
+};
+
+const allEras = ["All", ...new Set(artworkData.map(a => getEra(a.year)).sort())];
+
+const FloatingFilter = ({ current, onSelect, eras }) => {
+  return (
+    <div className="fixed bottom-8 left-0 right-0 z-50 flex justify-center pointer-events-none px-4">
+      {/* Container with max-width to ensure floating effect even on mobile */}
+      <div className="pointer-events-auto w-full max-w-md bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] rounded-2xl overflow-hidden ring-1 ring-white/5">
+        <div className="overflow-x-auto no-scrollbar p-2">
+          <div className="flex items-center gap-2 px-2">
+            {eras.map(era => (
+              <button
+                key={era}
+                onClick={() => onSelect(era)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-300 ${current === era
+                    ? 'bg-white/90 text-black shadow-lg scale-105'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+              >
+                {era}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const GalleryItem = ({ artwork }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className="gallery-item mb-12 break-inside-avoid"
+    >
+      <div className="relative group overflow-hidden rounded-lg bg-gray-900 shadow-xl hover:shadow-2xl transition-shadow duration-500">
+        <img
+          src={artwork.image}
+          alt={artwork.title}
+          className="gallery-image w-full h-auto object-cover transform transition-transform duration-700 ease-out group-hover:scale-110"
+          loading="lazy"
+        />
+        <div className="metadata-overlay absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6 pointer-events-none bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+          <h2 className="text-2xl italic font-light tracking-wide text-white mb-1 drop-shadow-lg">
+            {artwork.title}
+          </h2>
+          <p className="text-sm font-sans tracking-widest text-gray-300 uppercase mb-0.5 drop-shadow-md">
+            {artwork.artist}
+          </p>
+          <p className="text-xs font-sans text-gray-500 drop-shadow-md">
+            {artwork.year}
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// Utility to split array into N chunks for columns
+const useColumns = (items, columnCount) => {
+  const [columns, setColumns] = useState([]);
+
+  useEffect(() => {
+    const cols = Array.from({ length: columnCount }, () => []);
+    items.forEach((item, index) => {
+      cols[index % columnCount].push(item);
+    });
+    setColumns(cols);
+  }, [items, columnCount]);
+
+  return columns;
+};
+
+const ParallaxGallery = () => {
+  const { scrollY } = useScroll();
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [selectedEra, setSelectedEra] = useState("All");
+
+  const filteredData = artworkData.filter(item =>
+    selectedEra === "All" || getEra(item.year) === selectedEra
+  );
+
+  // Parallax Transforms
+  const y1 = useTransform(scrollY, [0, 4000], [0, -200]); // Moves slightly up (slower scroll feel)
+  const y2 = useTransform(scrollY, [0, 4000], [0, 150]);  // Moves slightly down (faster scroll feel)
+  const y3 = useTransform(scrollY, [0, 4000], [0, -100]);
+  const y4 = useTransform(scrollY, [0, 4000], [0, 200]);
+
+  // Smooth out the transform
+  const smoothY1 = useSpring(y1, { stiffness: 100, damping: 30, restDelta: 0.001 });
+  const smoothY2 = useSpring(y2, { stiffness: 100, damping: 30, restDelta: 0.001 });
+  const smoothY3 = useSpring(y3, { stiffness: 100, damping: 30, restDelta: 0.001 });
+  const smoothY4 = useSpring(y4, { stiffness: 100, damping: 30, restDelta: 0.001 });
+
+  const transforms = [smoothY1, smoothY2, smoothY3, smoothY4];
+
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Determine Column Count based on viewport (simplified logic for data splitting)
+  const getColumnCount = () => {
+    if (typeof window === 'undefined') return 1;
+    if (window.innerWidth >= 1280) return 4; // xl
+    if (window.innerWidth >= 1024) return 3; // lg
+    if (window.innerWidth >= 640) return 2;  // sm
+    return 1;
+  };
+
+  const [colCount, setColCount] = useState(1);
+  useEffect(() => {
+    const handleResize = () => setColCount(getColumnCount());
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const columns = useColumns(filteredData, colCount);
+
+  return (
+    <>
+      <FloatingFilter
+        current={selectedEra}
+        onSelect={setSelectedEra}
+        eras={allEras}
+      />
+
+      <div className="flex gap-8 w-full items-start justify-center min-h-screen">
+        {columns.map((col, i) => (
+          <motion.div
+            key={i}
+            style={{ y: (isDesktop && colCount > 1) ? transforms[i % 4] : 0, width: `${100 / colCount}%` }}
+            className="flex flex-col gap-8"
+          >
+            {col.map(artwork => (
+              <GalleryItem key={artwork.id} artwork={artwork} />
+            ))}
+          </motion.div>
+        ))}
+      </div>
+    </>
+  );
+};
+
+const GalleryPage = () => {
+  return (
+    <main className="w-full min-h-screen p-6 sm:p-12 lg:p-20 bg-[#0a0a0a] overflow-hidden">
+      <header className="mb-20 text-center animate-enter z-10 relative">
+        <h1 className="text-5xl md:text-7xl font-light text-white italic tracking-tighter mb-4 font-serif">
+          The Collection
+        </h1>
+        <p className="text-gray-500 text-sm tracking-[0.2em] uppercase">
+          A Curation of History
+        </p>
+      </header>
+
+      <ParallaxGallery />
+
+      <div className="h-48 w-full text-center text-gray-800 flex items-center justify-center text-sm tracking-widest mt-20 z-10 relative">
+        FINIS
+      </div>
+    </main>
+  );
+};
+
+const App = () => {
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      body {
+        font-family: 'Cormorant Garamond', serif;
+        background-color: #0a0a0a;
+        color: #f5f5f5;
+        overflow-x: hidden;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+        background: #0a0a0a;
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 4px;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .animate-enter {
+        animation: fadeIn 1s ease-out forwards;
+        opacity: 0;
+      }
+    `;
+    document.head.appendChild(style);
+
+    const link1 = document.createElement('link');
+    link1.rel = 'preconnect';
+    link1.href = 'https://fonts.googleapis.com';
+    document.head.appendChild(link1);
+
+    const link2 = document.createElement('link');
+    link2.rel = 'preconnect';
+    link2.href = 'https://fonts.gstatic.com';
+    link2.crossOrigin = 'anonymous';
+    document.head.appendChild(link2);
+
+    const link3 = document.createElement('link');
+    link3.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400&display=swap';
+    link3.rel = 'stylesheet';
+    document.head.appendChild(link3);
+
+    return () => {
+      document.head.removeChild(style);
+      document.head.removeChild(link1);
+      document.head.removeChild(link2);
+      document.head.removeChild(link3);
+    };
+  }, []);
+
+  return (
+    <Router basename="/">
+      <div className="antialiased min-h-screen w-full bg-[#0a0a0a]">
+        <Routes>
+          <Route path="/" element={<GalleryPage />} />
+        </Routes>
+      </div>
+    </Router>
+  );
+};
+
+export default App;
